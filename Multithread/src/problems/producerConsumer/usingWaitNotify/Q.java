@@ -15,6 +15,8 @@ public class Q {
 			}
 		
 		this.n = n;
+
+
 		System.out.println("Put: " + n);
 		lock = true;
 		notify();
