@@ -51,7 +51,20 @@
      }
     }
  
- ## Output
+ ### EXPECTED Output
+ **
+ Expected behavior: 
+ Beta threads should start, once ALL the Alpha completes
+ **
+ 
+ 
+      APLHA-1 added 3 bags
+      APLHA-0 added 3 bags
+      BETA-01 doubled bags
+      BETA-11 doubled bags
+      We need to buy: 28bags of chips
+ 
+ ### CURRENT Output
  
      BETA-01 doubled bags
      APLHA-1 added 3 bags
