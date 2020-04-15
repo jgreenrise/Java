@@ -2,6 +2,8 @@
 
 ## Output is indeterministic, as ordering of events affects programs correctness.
 
+### Example: Race Condition, Data Race is being handled with lock
+
     public class a_Buyers extends Thread {
  
      public static int basketOfChips = 1;
