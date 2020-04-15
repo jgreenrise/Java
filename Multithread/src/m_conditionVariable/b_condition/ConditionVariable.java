@@ -57,7 +57,7 @@ public class ConditionVariable extends Thread{
 
     public static void main(String[] args){
         for (int i = 0; i < 2; i++) {
-            new ConditionVariable(i).start();
+            new ConditionVariableManyThreads(i).start();
         }
     }
 

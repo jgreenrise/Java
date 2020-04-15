@@ -40,10 +40,8 @@ public class ProducerConsumerDemo {
             while(true){
                 try{
                     String bowl = queue.take();
-                    if(bowl.equalsIgnoreCase("No more sup")){
+                    if(bowl.equalsIgnoreCase("No more sup"))
                         break;
-                    }
-
 
                     System.out.format("Ate bowl: %s\n",bowl);
                     Thread.sleep(300);
@@ -51,8 +49,6 @@ public class ProducerConsumerDemo {
                     exception.printStackTrace();
                 }
             }
-
-            System.out.println();
         }
     }
 }

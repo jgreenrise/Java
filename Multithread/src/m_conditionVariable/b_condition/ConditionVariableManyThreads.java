@@ -8,8 +8,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Limitation: signal only notifies only of the thread instance. It does notify all the waiting threads.
- *
- * Program gets stuck
  */
 public class ConditionVariableManyThreads extends Thread{
 
@@ -31,7 +29,7 @@ public class ConditionVariableManyThreads extends Thread{
             try {
 
                 // 2. Check if its my turn to take soup, Since there are 2 person -> %2
-                if (personId == servings % 5 && servings > 0) {
+                if (personId == servings % 2 && servings > 0) {
 
                     servings--;
 
@@ -58,7 +56,7 @@ public class ConditionVariableManyThreads extends Thread{
     }
 
     public static void main(String[] args){
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 2; i++) {
             new ConditionVariableManyThreads(i).start();
         }
     }
