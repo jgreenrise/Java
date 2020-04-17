@@ -85,6 +85,138 @@
      APLHA-1 added 3 bags
      BETA-11 doubled bags
      We need to buy: 22bags of chips
- 
- 
+     
+## Solution Race condtion: Cyclic Barrier
 
+
+    public void run(){
+        if(this.getName().contains("APLHA")){
+            person.lock();
+            try{
+                Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+                basketOfChips = basketOfChips + 3;
+                System.out.println(this.getName() + " added 3 bags");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                person.unlock();
+            }
+            try {
+                /**
+                 * Only when all threads reach Await, then each thread can resume execution.
+                 * For example, if 2 out of 3 threads have completed processing, they have to enter into wait stage
+                 * They have to wait until Thread 3 has also reached await stage.
+                 */
+                barrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+        }else{
+            try {
+                barrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+
+            person.lock();
+            try{
+                basketOfChips = basketOfChips * 2;
+                System.out.println("\t"+this.getName() + " doubled bags");
+            }finally {
+                person.unlock();
+            }
+
+        }
+    }
+
+# Output is deterministic
+ 
+Output 1
+
+    APLHA-0 added 3 bags
+    APLHA-1 added 3 bags
+    APLHA-2 added 3 bags
+    APLHA-3 added 3 bags
+    APLHA-4 added 3 bags
+    	BETA-1 doubled bags
+    	BETA-2 doubled bags
+    	BETA-4 doubled bags
+    	BETA-5 doubled bags
+    	BETA-3 doubled bags
+    We need to buy: 512 bags of chips
+    
+Output 2
+
+    APLHA-0 added 3 bags
+    APLHA-1 added 3 bags
+    APLHA-2 added 3 bags
+    APLHA-3 added 3 bags
+    APLHA-4 added 3 bags
+    	BETA-1 doubled bags
+    	BETA-2 doubled bags
+    	BETA-4 doubled bags
+    	BETA-5 doubled bags
+    	BETA-3 doubled bags
+    We need to buy: 512 bags of chips
+    
+# Cyclic Barrier - Ex 2 - Multi player Game
+
+Requirement: 
+    We have three players in a game. Lets say we have to send message to each of them at same time to avoid any discrimination. We can use Cyclic Barrier.
+    
+    public class c_Cyclic_Barrier_example2 implements Runnable {
+    
+        private CyclicBarrier cyclicBarrier;
+        private String name;
+    
+        public c_Cyclic_Barrier_example2(CyclicBarrier cyclicBarrier, String name){
+            this.cyclicBarrier = cyclicBarrier;
+            this.name = name;
+        }
+    
+        public void run(){
+    
+            while(true) {
+                try {
+                    sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+    
+                    // Wait for sibling threads to complete
+                    cyclicBarrier.await();
+    
+                    // Send Message to Player
+                    System.out.println(name +" sent message at time: "+ new Date());
+    
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    e.printStackTrace();
+                }finally {
+                    break;
+                }
+            }
+        }
+    
+        public static void main(String[] args) throws InterruptedException {
+    
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            CyclicBarrier cyclicBarrier = new CyclicBarrier(3);
+            executorService.submit(new c_Cyclic_Barrier_example2(cyclicBarrier, "thread1"));
+            executorService.submit(new c_Cyclic_Barrier_example2(cyclicBarrier, "thread2"));
+            executorService.submit(new c_Cyclic_Barrier_example2(cyclicBarrier, "thread3"));
+    
+            System.out.println("\n Completed Sending Messages");
+            executorService.shutdown();
+        }
+    
+    }
+    
+#### Output 1
+
+    thread1 sent message at time: Thu Apr 16 17:35:34 PDT 2020
+    thread3 sent message at time: Thu Apr 16 17:35:34 PDT 2020
+    thread2 sent message at time: Thu Apr 16 17:35:34 PDT 2020
+    
+#### Output 2
+
+    thread3 sent message at time: Thu Apr 16 17:38:10 PDT 2020
+    thread1 sent message at time: Thu Apr 16 17:38:10 PDT 2020
+    thread2 sent message at time: Thu Apr 16 17:38:10 PDT 2020
+    
