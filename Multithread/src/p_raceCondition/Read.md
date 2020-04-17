@@ -159,6 +159,30 @@ Output 2
     	BETA-3 doubled bags
     We need to buy: 512 bags of chips
     
+Output 3 Detailed
+
+    APLHA-1 added 3 bags
+    		APLHA-1 Number of Parties (to trip the barrier, Waiting for Barrier to Lift): 10, 5
+    APLHA-2 added 3 bags
+    		APLHA-2 Number of Parties (to trip the barrier, Waiting for Barrier to Lift): 10, 6
+    APLHA-3 added 3 bags
+    		APLHA-3 Number of Parties (to trip the barrier, Waiting for Barrier to Lift): 10, 7
+    APLHA-4 added 3 bags
+    		APLHA-4 Number of Parties (to trip the barrier, Waiting for Barrier to Lift): 10, 8
+    APLHA-0 added 3 bags
+    		APLHA-0 Number of Parties (to trip the barrier, Waiting for Barrier to Lift): 10, 9
+    		APLHA-1 Moving on to some other task Thu Apr 16 18:11:54 PDT 2020
+    		APLHA-3 Moving on to some other task Thu Apr 16 18:11:54 PDT 2020
+    		APLHA-0 Moving on to some other task Thu Apr 16 18:11:54 PDT 2020
+    		APLHA-2 Moving on to some other task Thu Apr 16 18:11:54 PDT 2020
+    		APLHA-4 Moving on to some other task Thu Apr 16 18:11:54 PDT 2020
+    BETA-1 doubled bags at time: Thu Apr 16 18:11:54 PDT 2020
+    BETA-4 doubled bags at time: Thu Apr 16 18:11:55 PDT 2020
+    BETA-3 doubled bags at time: Thu Apr 16 18:11:55 PDT 2020
+    BETA-5 doubled bags at time: Thu Apr 16 18:11:55 PDT 2020
+    BETA-2 doubled bags at time: Thu Apr 16 18:11:55 PDT 2020
+    We need to buy: 512 bags of chips
+    
 # Cyclic Barrier - Ex 2 - Multi player Game
 
 Requirement: 

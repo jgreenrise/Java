@@ -55,6 +55,4 @@ public class c_Cyclic_Barrier_example2 implements Runnable {
 
     }
 
-
-
 }

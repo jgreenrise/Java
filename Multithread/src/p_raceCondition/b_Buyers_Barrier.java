@@ -1,5 +1,6 @@
 package p_raceCondition;
 
+import java.util.Date;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ThreadLocalRandom;
@@ -40,9 +41,14 @@ public class b_Buyers_Barrier extends Thread {
                  * For example, if 2 out of 3 threads have completed processing, they have to enter into wait stage
                  * They have to wait until Thread 3 has also reached await stage.
                  */
+
+                System.out.println("\t\t"+this.getName()+" Number of Parties (to trip the barrier, Waiting for Barrier to Lift: "+barrier.getParties()+", "+barrier.getNumberWaiting());
+
                 barrier.await();
             } catch (InterruptedException | BrokenBarrierException e) {
                 e.printStackTrace();
+            }finally {
+                System.out.println("\t\t"+this.getName() + " Moving on to some other task "+ new Date());
             }
         }else{
             try {
@@ -54,7 +60,7 @@ public class b_Buyers_Barrier extends Thread {
             person.lock();
             try{
                 basketOfChips = basketOfChips * 2;
-                System.out.println("\t"+this.getName() + " doubled bags");
+                System.out.println(""+this.getName() + " doubled bags at time: "+new Date());
             }finally {
                 person.unlock();
             }
