@@ -86,7 +86,7 @@
      BETA-11 doubled bags
      We need to buy: 22bags of chips
      
-## Solution Race condtion: Cyclic Barrier
+## Solution Race condition: Cyclic Barrier
 
 
     public void run(){
@@ -244,3 +244,66 @@ Requirement:
     thread1 sent message at time: Thu Apr 16 17:38:10 PDT 2020
     thread2 sent message at time: Thu Apr 16 17:38:10 PDT 2020
     
+## 2 Solution Race condition: Count Down Latch
+
+     /**
+         *  new CountDownLatch(TOTAL_NUMBER_OF_BUYERS/2)
+         *  Since we want to execute 5 Alpha threads before 5 beta threads
+         */
+        //private static CyclicBarrier barrier = new CyclicBarrier(10);
+        private static CountDownLatch countDownLatch = new CountDownLatch(TOTAL_NUMBER_OF_BUYERS/2);
+    
+        public void run(){
+            if(this.getName().contains("APLHA")){
+                person.lock();
+                try{
+                    Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+                    basketOfChips = basketOfChips + 3;
+                    System.out.println(this.getName() + " added 3 bags");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    person.unlock();
+                }
+                try {
+                    //DECREMENT count latch by 1
+                    countDownLatch.countDown();
+                } finally {
+                    System.out.println("\t\t"+this.getName() + " Latch Count: "+ countDownLatch.getCount());
+                }
+            }else{
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+    
+                person.lock();
+                try{
+                    basketOfChips = basketOfChips * 2;
+                    System.out.println(""+this.getName() + " doubled bags at time: "+new Date());
+                }finally {
+                    person.unlock();
+                }
+    
+            }
+        }
+
+Output
+
+    Thu Apr 16 20:20:10 PDT 2020 	 thread-1 		 Reduced the CountDown latch to : 2 
+    Thu Apr 16 20:20:10 PDT 2020 	 thread-2 		 Reduced the CountDown latch to : 1 
+    Thu Apr 16 20:20:11 PDT 2020 	 thread-3 		 Reduced the CountDown latch to : 0 
+    
+    Thu Apr 16 20:20:11 PDT 2020	 Thread-Main 	 Started 
+    
+Output 2
+
+    Thu Apr 16 20:20:54 PDT 2020 	 thread-2 		 Reduced the CountDown latch to : 2 
+    Thu Apr 16 20:20:54 PDT 2020 	 thread-3 		 Reduced the CountDown latch to : 1 
+    Thu Apr 16 20:20:54 PDT 2020 	 thread-1 		 Reduced the CountDown latch to : 0 
+    
+    Thu Apr 16 20:20:54 PDT 2020	 Thread-Main 	 Started 
+    
+
+
