@@ -51,9 +51,6 @@ public class e_CountDownLatch_MainThreadChildThreads implements Runnable {
         System.out.println("\n"+new Date()+ "\t Thread-Main \t Started ");
 
         executorService.shutdown();
-
-
-
     }
 
 }

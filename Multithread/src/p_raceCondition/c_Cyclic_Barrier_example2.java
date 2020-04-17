@@ -21,7 +21,6 @@ public class c_Cyclic_Barrier_example2 implements Runnable {
     }
 
     public void run(){
-
         while(true) {
             try {
                 sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
@@ -47,12 +46,8 @@ public class c_Cyclic_Barrier_example2 implements Runnable {
         executorService.submit(new c_Cyclic_Barrier_example2(cyclicBarrier, "thread1"));
         executorService.submit(new c_Cyclic_Barrier_example2(cyclicBarrier, "thread2"));
         executorService.submit(new c_Cyclic_Barrier_example2(cyclicBarrier, "thread3"));
-
         System.out.println("\n Completed Sending Messages");
-
         executorService.shutdown();
-
-
     }
 
 }
