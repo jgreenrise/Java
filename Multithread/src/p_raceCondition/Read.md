@@ -244,6 +244,129 @@ Requirement:
     thread1 sent message at time: Thu Apr 16 17:38:10 PDT 2020
     thread2 sent message at time: Thu Apr 16 17:38:10 PDT 2020
     
+# Cyclic Barrier - Aggregation / Compute
+
+1. N number of child threads create list of integers.
+2. Main thread aggregates intgers created by child threads
+
+For ex
+* Thread 1 create list of integer [3,4,5]
+* Thread 2 create list of integer [4,4,2]
+* Thread 3 create list of integer [4,4,2]`
+    
+    Aggregate: All the numbers
+    
+            public class c_Cyclic_Barrier_04_Aggregation {
+    
+        private int NUM_PARTIAL_RESULTS;
+        private static List<List<Integer>> partialResults = Collections.synchronizedList(new ArrayList<>());
+    
+        public static void main(String[] args)  {
+    
+            int NUM_WORKER_THREADS = 3;
+            int COUNT_LIST_SIZE = 5;
+    
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
+    
+            // 3 Service Thread + 1 Main thread
+            CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_WORKER_THREADS, new AggregatorThread(NUM_WORKER_THREADS, COUNT_LIST_SIZE));
+    
+            System.out.println("Main waits for child threads to do their job");
+    
+            for (int i = 0; i < NUM_WORKER_THREADS; i++) {
+                executorService.submit(new NumberCrunchThread(cyclicBarrier, "thread-worker-"+i, COUNT_LIST_SIZE));
+            }
+    
+            executorService.shutdown();
+        }
+    
+        private static class NumberCrunchThread implements Runnable {
+            private CyclicBarrier cyclicBarrier;
+            private String name;
+            private int listSize;
+            Random random = new Random();
+    
+            public NumberCrunchThread(CyclicBarrier cyclicBarrier, String name, int listSize) {
+                this.cyclicBarrier = cyclicBarrier;
+                this.name = name;
+                this.listSize = listSize;
+            }
+    
+            public void run() {
+                try {
+    
+                    List<Integer> partialResult = new ArrayList<>();
+    
+                    // Crunch some numbers and store the partial result
+                    for (int i = 0; i < listSize; i++) {
+                        Integer num = random.nextInt(10);
+                        System.out.println(name + ": Added Random number - " + num);
+                        partialResult.add(num);
+                    }
+                    partialResults.add(partialResult);
+    
+                    cyclicBarrier.await();
+    
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    
+        private static class AggregatorThread implements Runnable {
+            private final int num_worker_threads;
+            private final int count_list_size;
+    
+            public AggregatorThread(int num_worker_threads, int count_list_size) {
+                this.num_worker_threads = num_worker_threads;
+                this.count_list_size = count_list_size;
+            }
+    
+    
+            public void run() {
+                System.out.println(
+                        "thread-Aggregator  : Computing sum of " + num_worker_threads
+                                + " workers, having " + count_list_size + " results each.");
+                int sum = 0;
+    
+                for (List<Integer> threadResult : partialResults) {
+                    System.out.print("Adding ");
+                    for (Integer partialResult : threadResult) {
+                        System.out.print(partialResult+" ");
+                        sum += partialResult;
+                    }
+                    System.out.println();
+                }
+                System.out.println("Thread-Aggregator : Final result = " + sum);
+            }
+        } 
+        }
+    
+Output
+
+    thread-0: Random number - 6
+    thread-1: Random number - 9
+    thread-2: Random number - 6
+    thread-1: Random number - 5
+    thread-0: Random number - 5
+    thread-1: Random number - 8
+    thread-1: Random number - 0
+    thread-2: Random number - 0
+    thread-1: Random number - 6
+    thread-0: Random number - 3
+    thread-2: Random number - 3
+    thread-0: Random number - 3
+    thread-0: Random number - 8
+    thread-2: Random number - 1
+    thread-2: Random number - 2
+    thread-Aggregator  : Computing sum of 3 workers, having 5 results each.
+    Adding 9 5 8 0 6 
+    Adding 6 5 3 3 8 
+    Adding 6 0 3 1 2 
+    Thread-final-Aggregator : Final result = 65
+    
+    Process finished with exit code 0
+
 ## 2 Solution Race condition: Count Down Latch
 
      /**
@@ -305,5 +428,173 @@ Output 2
     
     Thu Apr 16 20:20:54 PDT 2020	 Thread-Main 	 Started 
     
+## CountDown Latch: Use Case: Main thread waiting for N threads to complete
 
+    /**
+     * Child threads should finish before main thread starts
+     */
+    public class e_CountDownLatch_MainThreadChildThreads implements Runnable {
+    
+        private CountDownLatch countDownLatch;
+        private String name;
+    
+        public e_CountDownLatch_MainThreadChildThreads(CountDownLatch countDownLatch, String name){
+            this.countDownLatch = countDownLatch;
+            this.name = name;
+        }
+    
+        public void run(){
+    
+            while(true) {
+                try {
+                    sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+    
+                    // I have Finished processing My task. Reducing the latch value
+                    countDownLatch.countDown();
+    
+                    // Send Message to Player
+                    System.out.printf("%s \t %s \t\t Reduced the CountDown latch to : %d \n", new Date().toString(), name, countDownLatch.getCount());
+    
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }finally {
+                    break;
+                }
+            }
+        }
+    
+        public static void main(String[] args) throws InterruptedException {
+    
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            CountDownLatch latch = new CountDownLatch(3);
+            executorService.submit(new e_CountDownLatch_MainThreadChildThreads(latch, "thread-1"));
+            executorService.submit(new e_CountDownLatch_MainThreadChildThreads(latch, "thread-2"));
+            executorService.submit(new e_CountDownLatch_MainThreadChildThreads(latch, "thread-3"));
+    
+            latch.await();
+    
+            System.out.println("\n"+new Date()+ "\t Thread-Main \t Started ");
+    
+            executorService.shutdown();
+        }
 
+Output
+
+    Thu Apr 16 22:49:23 PDT 2020 	 thread-2 		 Reduced the CountDown latch to : 2 
+    Thu Apr 16 22:49:23 PDT 2020 	 thread-3 		 Reduced the CountDown latch to : 1 
+    Thu Apr 16 22:49:24 PDT 2020 	 thread-1 		 Reduced the CountDown latch to : 0 
+    
+    Thu Apr 16 22:49:24 PDT 2020	 Thread-Main 	 Started 
+    
+Output 2
+
+    Thu Apr 16 22:50:15 PDT 2020 	 thread-1 		 Reduced the CountDown latch to : 2 
+    Thu Apr 16 22:50:16 PDT 2020 	 thread-3 		 Reduced the CountDown latch to : 1 
+    Thu Apr 16 22:50:16 PDT 2020 	 thread-2 		 Reduced the CountDown latch to : 0 
+    
+    Thu Apr 16 22:50:16 PDT 2020	 Thread-Main 	 Started 
+    
+## Count down Latch - Use Case Bank
+
+#### Debit Processing Service
+When we start Debit processing Service, we can initialize and setup each of the 3 service in a serial fashion.
+* Authentication Service
+* Fraud Service
+* Bank Account Service
+
+This can delay the startup time.
+
+The other approach is to initialize and setup the services in parallel threads. 
+For this we need to ensure we do not begin processing any debit transactions until all the 3 services are initialized and setup. 
+This is a one-time synchronization that needs to happen at start-up.
+
+     public static void main(String[] args) throws InterruptedException {
+    
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            CountDownLatch latch = new CountDownLatch(3);
+            executorService.submit(new AuthenticationService(latch, "thread-authSvc"));
+            executorService.submit(new AccountBalanceService(latch, "thread-acctSvc"));
+            executorService.submit(new FraudService(latch, "thread-fraudSvc"));
+    
+            latch.await();
+    
+            System.out.println("\n" + new Date() + "\t Thread-Debit Transaction \t Started ");
+    
+            executorService.shutdown();
+        }
+    
+        private static class AuthenticationService implements Runnable {
+            private CountDownLatch countDownLatch;
+            private String name;
+    
+            public AuthenticationService(CountDownLatch countDownLatch, String name) {
+                this.countDownLatch = countDownLatch;
+                this.name = name;
+            }
+    
+            public void run() {
+                try {
+                    sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+                    countDownLatch.countDown();
+                    System.out.printf("%s \t %s \t\t Reduced the CountDown latch to : %d \n", new Date().toString(), name, countDownLatch.getCount());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    
+        private static class AccountBalanceService implements Runnable {
+            private CountDownLatch countDownLatch;
+            private String name;
+    
+            public AccountBalanceService(CountDownLatch countDownLatch, String name) {
+                this.countDownLatch = countDownLatch;
+                this.name = name;
+            }
+    
+            public void run() {
+                try {
+                    sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+                    countDownLatch.countDown();
+                    System.out.printf("%s \t %s \t\t Reduced the CountDown latch to : %d \n", new Date().toString(), name, countDownLatch.getCount());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    
+        private static class FraudService implements Runnable {
+            private CountDownLatch countDownLatch;
+            private String name;
+    
+            public FraudService(CountDownLatch countDownLatch, String name) {
+                this.countDownLatch = countDownLatch;
+                this.name = name;
+            }
+    
+            public void run() {
+                try {
+                    sleep(ThreadLocalRandom.current().nextInt(1000, 2000));
+                    countDownLatch.countDown();
+                    System.out.printf("%s \t %s \t\t Reduced the CountDown latch to : %d \n", new Date().toString(), name, countDownLatch.getCount());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        
+Output
+
+Thu Apr 16 22:52:16 PDT 2020 	 thread-fraudSvc 		 Reduced the CountDown latch to : 2 
+Thu Apr 16 22:52:16 PDT 2020 	 thread-acctSvc 		 Reduced the CountDown latch to : 1 
+Thu Apr 16 22:52:17 PDT 2020 	 thread-authSvc 		 Reduced the CountDown latch to : 0 
+
+Thu Apr 16 22:52:17 PDT 2020	 Thread-Debit Transaction 	 Started 
+
+Output 2
+
+Thu Apr 16 22:52:26 PDT 2020 	 thread-fraudSvc 		 Reduced the CountDown latch to : 2 
+Thu Apr 16 22:52:27 PDT 2020 	 thread-acctSvc 		 Reduced the CountDown latch to : 1 
+Thu Apr 16 22:52:27 PDT 2020 	 thread-authSvc 		 Reduced the CountDown latch to : 0 
+
+Thu Apr 16 22:52:27 PDT 2020	 Thread-Debit Transaction 	 Started 
